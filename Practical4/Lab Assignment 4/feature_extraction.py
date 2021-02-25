@@ -3,7 +3,31 @@ import sys
 import time
 import csv
 
-def process_seq(resultant, input_config, seq):
+def process_seq(class_, seq):
+
+    input_config = {
+        'F1' : 0,
+        'F2' : 0,
+        'F3' : 0,
+        'F4' : 0,
+        'F5' : 0,
+        'F6' : 0,
+        'Class' : 0
+
+    }
+
+    resultant = {
+                'N' : 'F1',
+                'H' : 'F2',
+                'Q' : 'F3',
+                'G' : 'F4',
+                'D' : 'F5',
+                'T' : 'F6'
+
+            }
+
+    input_config['Class'] = class_
+
 
     is_valid_line = True
     
@@ -21,7 +45,7 @@ def process_seq(resultant, input_config, seq):
 
     return is_valid_line, input_config
 
-def build_config(line, resultant):
+def build_config(line):
     '''
     @What -> This function takes a line from file as an input
                 Check if the line is valid
@@ -34,25 +58,19 @@ def build_config(line, resultant):
                 else 
                     return {} and Invalid line
     '''
-    input_config = {
-        'F1' : 0,
-        'F2' : 0,
-        'F3' : 0,
-        'F4' : 0,
-        'F5' : 0,
-        'F6' : 0,
-        'Class' : 0
-
-    }
+    
 
     is_valid_line = True
 
     ## class and sequence should be valid
     if len(line) < 2:
+        
         is_valid_line = False
 
     seq = ''
+    
     class_ = ''
+    
     no_class_found = False
 
 
@@ -64,27 +82,34 @@ def build_config(line, resultant):
 
 
         if class_ not in ['+', '-']:
+
             is_valid_line = False 
+
             no_class_found = True
+
         else:
+
             class_ = 1 if class_ == '+' else 0
 
 
-    
-
-        input_config['Class'] = class_
-
         if is_valid_line:
-            is_valid_line, input_config = process_seq(seq = seq, resultant=resultant, input_config=input_config)
+
+            is_valid_line, input_config = process_seq(seq = seq, class_=class_)
 
         
 
     if is_valid_line:
+        
         return is_valid_line, input_config
+    
     else:
+    
         if no_class_found:
+    
             class_ = ''
+    
         else:
+    
             class_ = '-' if (class_ == 1) else '+'
         
         return is_valid_line, (seq, class_)
@@ -105,21 +130,13 @@ def process_file(filename, seq_no, result_file_writer_obj, log_file_writer_obj):
 
             file_content = in_file.read().split('\n')
 
-            resultant = {
-                'N' : 'F1',
-                'H' : 'F2',
-                'Q' : 'F3',
-                'G' : 'F4',
-                'D' : 'F5',
-                'T' : 'F6'
-
-            }
+            
 
 
 
             for line in file_content[1:]:
                 
-                is_valid_line, config = build_config(line, resultant)
+                is_valid_line, config = build_config(line)
 
                 if is_valid_line:
 
