@@ -1,23 +1,89 @@
 # Take filenames as input args
 import sys
 
-def main():
+def process_seq(resultant, line_no, input_config, seq):
 
-    input_filenames = sys.argv[1:]
+    is_valid_line = True
+    
+    for char in seq:
+        if char in resultant.keys():
 
-    seq_no = 1
+            input_config[resultant[char]] += 1
 
-    for filename in input_filenames:
+
+        elif char.isdigit() or char in ['+', '-']:
+            # Write this in the log file
+            is_valid_line = False
+
+            break
+
+    return is_valid_line, input_config
+
+def build_config(line, resultant, line_no):
+    '''
+    @What -> This function takes a line from file as an input
+                Check if the line is valid
+
+                A line is valid if --> 1) It has 2 columns
+                                        No digit in first column
+                                        +/- in second column
+
+                if Line is valid, build a config and return
+                else 
+                    return {} and Invalid line
+    '''
+    input_config = {
+        'F1' : 0,
+        'F2' : 0,
+        'F3' : 0,
+        'F4' : 0,
+        'F5' : 0,
+        'F6' : 0,
+        'Class' : 0
+
+    }
+
+    is_valid_line = True
+
+    ## class and sequence should be valid
+    if len(line) < 2:
+        is_valid_line = False
+
+    if is_valid_line:
+
+        seq = line.split(',')[0]
+
+        class_ = line.split(',')[1]
+
+        if class_ not in ['+', '-']:
+            is_valid_line = False
+
+        if is_valid_line:
+            is_valid_line, input_config = process_seq(seq = seq, line_no=line_no, resultant=resultant, input_config=input_config)
+
         
-        
-        # Open the file and read the content
-        with open(filename, 'r+') as in_file:
 
-            line_no = 1
+    if is_valid_line:
+        return is_valid_line, input_config
+    else:
+        return is_valid_line, {}
+
+
+
+def process_file(filename, seq_no):
+    '''
+    @Input -> Filename
+
+    @what -> This function takes filename as input
+                read each line in the file
+                if line is ok -> write it in the result file
+                else -> Create an entry in the log file
+
+    '''
+    line_no = 0
+    with open(filename, 'r+') as in_file:
+
             file_content = in_file.read().split('\n')
-
-
-            
 
             resultant = {
                 'N' : 'F1',
@@ -30,72 +96,36 @@ def main():
             }
 
 
-            for line in file_content[1:]:
-                print(line)
-                input_config = {
-                    'F1' : 0,
-                    'F2' : 0,
-                    'F3' : 0,
-                    'F4' : 0,
-                    'F5' : 0,
-                    'F6' : 0,
-                    'Class' : 0
 
-                }
-
-                is_valid_line = True
-
-                ## class and sequence should be valid
-                if len(line) < 2:
-                    is_valid_line = False
-
-                if is_valid_line:
-
+            for line, line_no in enumerate(file_content[1:]):
                 
-
-                # Line -> seq, Class
-                    seq = line.split(',')[0]
-
-                    class_ = line.split(',')[1]
-
-                    for char in seq:
-
-                        # FIll the config
-                        if char in resultant.keys():
-                            print(f'{char}, {resultant[char]}\n')
-
-                            input_config[resultant[char]] += 1
-
-                        # IF CHAR is digit
-                        # Go to the next line
-                        elif char.isdigit() or char in ['+', '-']:
-                            # Write this in the log file
-                            print(f'Invalid seq {seq} at line number {line_no}\n')
-
-                            is_valid_line = False
-
-                            break
-
-
+                is_valid_line, config = build_config(line, resultant, line_no)
 
                 if is_valid_line:
-                    print(input_config)
+                    # print(config)
+                    pass
                 else:
-                    print('Write an entry in the log file')
+                    print(f'Write an entry in the log file for Line {line}')
 
-
-
-                # Write input config to the resultant file
-                # FOR NOW JUST WRITE THE LINE--> REFACTOR LATER
                 
-            break
-
-
-                    # Char is valid
 
 
 
-        line_no += 1
+
+
+def main():
+
+    input_filenames = sys.argv[1:]
+
+    seq_no = 1
+
+    for filename in input_filenames:
+
+        process_file(filename, seq_no)
+
+        break
+
+        
                 
 
                 
