@@ -1,7 +1,9 @@
 # Take filenames as input args
 import sys
+import time
+import csv
 
-def process_seq(resultant, line_no, input_config, seq):
+def process_seq(resultant, input_config, seq):
 
     is_valid_line = True
     
@@ -19,7 +21,7 @@ def process_seq(resultant, line_no, input_config, seq):
 
     return is_valid_line, input_config
 
-def build_config(line, resultant, line_no):
+def build_config(line, resultant):
     '''
     @What -> This function takes a line from file as an input
                 Check if the line is valid
@@ -49,28 +51,47 @@ def build_config(line, resultant, line_no):
     if len(line) < 2:
         is_valid_line = False
 
+    seq = ''
+    class_ = ''
+    no_class_found = False
+
+
     if is_valid_line:
 
         seq = line.split(',')[0]
 
         class_ = line.split(',')[1]
 
+
         if class_ not in ['+', '-']:
-            is_valid_line = False
+            is_valid_line = False 
+            no_class_found = True
+        else:
+            class_ = 1 if class_ == '+' else 0
+
+
+    
+
+        input_config['Class'] = class_
 
         if is_valid_line:
-            is_valid_line, input_config = process_seq(seq = seq, line_no=line_no, resultant=resultant, input_config=input_config)
+            is_valid_line, input_config = process_seq(seq = seq, resultant=resultant, input_config=input_config)
 
         
 
     if is_valid_line:
         return is_valid_line, input_config
     else:
-        return is_valid_line, {}
+        if no_class_found:
+            class_ = ''
+        else:
+            class_ = '-' if (class_ == 1) else '+'
+        
+        return is_valid_line, (seq, class_)
 
 
 
-def process_file(filename, seq_no):
+def process_file(filename, seq_no, result_file_writer_obj, log_file_writer_obj):
     '''
     @Input -> Filename
 
@@ -80,7 +101,6 @@ def process_file(filename, seq_no):
                 else -> Create an entry in the log file
 
     '''
-    line_no = 0
     with open(filename, 'r+') as in_file:
 
             file_content = in_file.read().split('\n')
@@ -97,17 +117,23 @@ def process_file(filename, seq_no):
 
 
 
-            for line, line_no in enumerate(file_content[1:]):
+            for line in file_content[1:]:
                 
-                is_valid_line, config = build_config(line, resultant, line_no)
+                is_valid_line, config = build_config(line, resultant)
 
                 if is_valid_line:
-                    # print(config)
-                    pass
-                else:
-                    print(f'Write an entry in the log file for Line {line}')
+                    config['seq_no'] = seq_no
+                    seq_no += 1
 
-                
+                    # print(config)
+                    result_file_writer_obj.writerow(config)
+
+                else:
+                    seq, class_ = config
+                    
+                    log_file_writer_obj.writerow([filename, seq, class_])
+
+    return seq_no
 
 
 
@@ -119,11 +145,51 @@ def main():
 
     seq_no = 1
 
+    # Create a result file
+    # This will create a new file
+    res_time = time.time()
+
+    result_file = open(f'result-{res_time}.csv', 'w')
+
+    result_file.close()
+
+    result_file = open(f'result-{res_time}.csv', 'a')
+
+
+    # Construct a similar log file
+    log_time = time.time()
+
+    log_file = open(f'log-{log_time}.csv', 'w')
+
+    log_file.close()
+
+    log_file = open(f'log-{log_time}.csv', 'a')
+
+
+    # Open the file in append mode now
+
+    input_fieldnames = ['seq_no', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'Class']
+
+    log_fieldnames = ['Filename', 'Seq', 'Class']
+
+    log_writer = csv.writer(log_file)
+
+    log_writer.writerow(log_fieldnames)
+
+    writer = csv.DictWriter(result_file, fieldnames=input_fieldnames)
+
+    # Write the header to the result file
+    writer.writeheader()
+
+
     for filename in input_filenames:
 
-        process_file(filename, seq_no)
+        # For each file, we are going to write rows in the result file
+        print(filename)
 
-        break
+        seq_no = process_file(filename, seq_no, writer, log_writer)
+
+
 
         
                 
