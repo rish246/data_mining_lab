@@ -8,10 +8,10 @@ def process_seq(resultant, input_config, seq):
     is_valid_line = True
     
     for char in seq:
+        
         if char in resultant.keys():
 
             input_config[resultant[char]] += 1
-
 
         elif char.isdigit() or char in ['+', '-']:
             # Write this in the log file
@@ -122,21 +122,32 @@ def process_file(filename, seq_no, result_file_writer_obj, log_file_writer_obj):
                 is_valid_line, config = build_config(line, resultant)
 
                 if is_valid_line:
+
                     config['seq_no'] = seq_no
+
                     seq_no += 1
 
-                    # print(config)
                     result_file_writer_obj.writerow(config)
 
                 else:
+
                     seq, class_ = config
-                    
+
                     log_file_writer_obj.writerow([filename, seq, class_])
 
     return seq_no
 
 
+def create_and_open_file(filetype):
+    f_time = time.time()
 
+    file_ = open(f'{filetype}-{f_time}.csv', 'w')
+
+    file_.close()
+
+    file_ = open(f'{filetype}-{f_time}.csv', 'a')
+
+    return file_
 
 
 def main():
@@ -145,30 +156,14 @@ def main():
 
     seq_no = 1
 
-    # Create a result file
-    # This will create a new file
-    res_time = time.time()
-
-    result_file = open(f'result-{res_time}.csv', 'w')
-
-    result_file.close()
-
-    result_file = open(f'result-{res_time}.csv', 'a')
+    result_file = create_and_open_file(filetype='result')
 
 
-    # Construct a similar log file
-    log_time = time.time()
-
-    log_file = open(f'log-{log_time}.csv', 'w')
-
-    log_file.close()
-
-    log_file = open(f'log-{log_time}.csv', 'a')
+    log_file = create_and_open_file(filetype='log')
 
 
     # Open the file in append mode now
 
-    input_fieldnames = ['seq_no', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'Class']
 
     log_fieldnames = ['Filename', 'Seq', 'Class']
 
@@ -176,18 +171,17 @@ def main():
 
     log_writer.writerow(log_fieldnames)
 
-    writer = csv.DictWriter(result_file, fieldnames=input_fieldnames)
 
-    # Write the header to the result file
-    writer.writeheader()
+    result_fieldnames = ['seq_no', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'Class']
+
+    result_writer = csv.DictWriter(result_file, fieldnames=result_fieldnames)
+
+    result_writer.writeheader()
 
 
     for filename in input_filenames:
 
-        # For each file, we are going to write rows in the result file
-        print(filename)
-
-        seq_no = process_file(filename, seq_no, writer, log_writer)
+        seq_no = process_file(filename, seq_no, result_writer, log_writer)
 
 
 
