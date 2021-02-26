@@ -116,7 +116,7 @@ def build_config(line):
 
 
 
-def process_file(filename, seq_no, result_file_writer_obj, log_file_writer_obj):
+def process_file(filename, result_file_writer_obj, log_file_writer_obj, seq_no):
     '''
     @Input -> Filename
 
@@ -130,9 +130,6 @@ def process_file(filename, seq_no, result_file_writer_obj, log_file_writer_obj):
 
             file_content = in_file.read().split('\n')
 
-            
-
-
 
             for line in file_content[1:]:
                 
@@ -142,7 +139,7 @@ def process_file(filename, seq_no, result_file_writer_obj, log_file_writer_obj):
 
                     config['seq_no'] = seq_no
 
-                    seq_no += 1
+                    
 
                     result_file_writer_obj.writerow(config)
 
@@ -151,6 +148,8 @@ def process_file(filename, seq_no, result_file_writer_obj, log_file_writer_obj):
                     seq, class_ = config
 
                     log_file_writer_obj.writerow([filename, seq, class_])
+
+                seq_no += 1
 
     return seq_no
 
@@ -166,21 +165,10 @@ def create_and_open_file(filetype):
 
     return file_
 
+def generate_result_and_log_writer():
 
-def main():
-
-    input_filenames = sys.argv[1:]
-
-    seq_no = 1
-
-    result_file = create_and_open_file(filetype='result')
-
-
+    ############## GENERATE A LOG WRITER ###############
     log_file = create_and_open_file(filetype='log')
-
-
-    # Open the file in append mode now
-
 
     log_fieldnames = ['Filename', 'Seq', 'Class']
 
@@ -189,16 +177,30 @@ def main():
     log_writer.writerow(log_fieldnames)
 
 
+    ################# GENERATE A RESULT WRITER ###############
+    result_file = create_and_open_file(filetype='result')
+
     result_fieldnames = ['seq_no', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'Class']
 
     result_writer = csv.DictWriter(result_file, fieldnames=result_fieldnames)
 
     result_writer.writeheader()
 
+    return result_writer, log_writer
+
+
+def main():
+
+    input_filenames = sys.argv[1:]
+
+    seq_no = 1
+
+    result_writer, log_writer = generate_result_and_log_writer()
+
 
     for filename in input_filenames:
 
-        seq_no = process_file(filename, seq_no, result_writer, log_writer)
+        seq_no = process_file(filename, result_writer, log_writer, seq_no=seq_no)
 
 
 
