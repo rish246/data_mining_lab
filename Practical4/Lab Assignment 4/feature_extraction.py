@@ -3,42 +3,47 @@ import sys
 import time
 import csv
 import logging
+import os
 
 
-def create_and_open_file(filetype):
-    f_time = time.time()
+def create_file(filetype):
+    '''
+    This function takes a filetype and create a file named base on the filetye
 
-    file_ = open(f'{filetype}-{f_time}.csv', 'w')
+    @return : filename
+    '''
+    f_name = f'{filetype}-{time.time()}.csv'
+
+    file_ = open(f_name, 'w')
 
     file_.close()
 
-    file_ = open(f'{filetype}-{f_time}.csv', 'a')
+    return f_name
+
+# def generate_result_and_log_writer():
+
+#     ############## GENERATE A LOG WRITER ###############
+#     log_file = create_file(filetype='log')
+
+#     log_fieldnames = ['Filename', 'Seq', 'Class']
+
+#     log_writer = csv.writer(log_file)
+
+#     log_writer.writerow(log_fieldnames)
 
 
-    return file_
+#     ################# GENERATE A RESULT WRITER ###############
+#     result_file = create_file(filetype='result')
 
-def generate_result_and_log_writer():
+#     res_file_copy = result_file
 
-    ############## GENERATE A LOG WRITER ###############
-    log_file = create_and_open_file(filetype='log')
+#     result_fieldnames = ['seq_no', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'Class']
 
-    log_fieldnames = ['Filename', 'Seq', 'Class']
+#     result_writer = csv.DictWriter(result_file, fieldnames=result_fieldnames)
 
-    log_writer = csv.writer(log_file)
+#     result_writer.writeheader()
 
-    log_writer.writerow(log_fieldnames)
-
-
-    ################# GENERATE A RESULT WRITER ###############
-    result_file = create_and_open_file(filetype='result')
-
-    result_fieldnames = ['seq_no', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'Class']
-
-    result_writer = csv.DictWriter(result_file, fieldnames=result_fieldnames)
-
-    result_writer.writeheader()
-
-    return result_writer, log_writer
+#     return result_writer, log_writer
 
 def process_seq(class_, seq):
 
@@ -144,48 +149,69 @@ def build_config(line):
 
 
 
-def process_file(filename, result_file_writer_obj, log_file_writer_obj, seq_no):
+def process_file(filename, seq_no):
     '''
-    @Input -> Filename
+    @Input -> Filename, seq_no
 
-    @what -> This function takes filename as input
-                read each line in the file
-                if line is ok -> write it in the result file
-                else -> Create an entry in the log file
+    @returns -> 
+        1. Updated seq_no
+        2. List of Result file entries
+        3. List of Log file entries
 
     '''
-    try:
-        with open(filename, 'r+') as in_file:
 
-                file_content = in_file.read().split('\n')
+    result_entries = []
 
+    log_entries = []
 
-                for line in file_content[1:]:
-                    
-                    is_valid_line, config = build_config(line)
+    with open(filename, 'r+') as in_file:
 
-                    if is_valid_line:
-
-                        config['seq_no'] = seq_no
-
-                        
-
-                        result_file_writer_obj.writerow(config)
-
-                    else:
-
-                        seq, class_ = config
-
-                        log_file_writer_obj.writerow([filename, seq, class_])
-
-                    seq_no += 1
-    except OSError:
-
-        return -1
-
-    return seq_no
+            file_content = in_file.read().split('\n')
 
 
+            for line in file_content[1:]:
+                
+                is_valid_line, config = build_config(line)
+
+                if is_valid_line:
+
+                    config['seq_no'] = seq_no
+
+                    new_res_entry = [config['seq_no'], config['F1'], config['F1'], config['F1'], config['F1'], config['F1'], config['F1'], config['Class']]
+
+                    result_entries.append(new_res_entry)
+
+                else:
+
+                    seq, class_ = config
+
+                    new_log_entry = [filename, seq, class_]
+
+                    log_entries.append(new_log_entry)
+
+                seq_no += 1
+    
+
+    return seq_no, result_entries, log_entries
+
+
+def write_file(filename, entries, header):
+    
+    with open(filename, 'r+') as file:
+
+        file.write(f'{header}\n')
+
+        for entry in entries[1:]:
+
+            # convert entry to string
+            entry_str = ''
+
+            for char in entry:
+                entry_str += str(char) + ','
+
+            file.write(entry_str[:-1] + '\n')
+
+        file.close()
 
 
 
@@ -201,31 +227,75 @@ def main():
 
         seq_no = 1
 
-        result_writer, log_writer = generate_result_and_log_writer()
+        # result_writer, log_writer = generate_result_and_log_writer()
+        result_filename = create_file(filetype='result')
+        
+        log_filename = create_file(filetype='log')
 
 
+        result_file_entries = []
+
+        log_file_entries = []
+
+        
         for filename in input_filenames:
 
             original_seq_no = seq_no
 
-            seq_no = process_file(filename, result_writer, log_writer, seq_no=seq_no)
+            seq_no, res_entries, log_entries = process_file(filename, seq_no=seq_no)
 
-            if seq_no == -1:
+            result_file_entries = result_file_entries + res_entries
 
-                seq_no = original_seq_no
+            log_file_entries = log_file_entries + log_entries
 
-                # restore the original seq_number
-                raise OSError()
+
+
+        # Now take the result filename
+        write_file(result_filename, result_file_entries, header='Seq,F1,F2,F3,F4,F5,F6,Class')
+
+        write_file(log_filename, log_file_entries, header='Filename,Seq,Class')
+
+        # open it in r+ mode and writethe result_file_entries to result_filename
+        
+
+
+            
+
+            
+
+        #     if seq_no == -1:
+
+        #         seq_no = original_seq_no
+
+        # #         # restore the original seq_number
+        #         raise OSError()
+
+                
+        #     # sleep(3)
+
+            
+        # ### Get the log file and res file
+        # files_in_cur_folder = os.listdir('./')
+        # # print(os.path.curdir)
+        # # print(files_in_cur_folder)
+        # our_files = [file for file in files_in_cur_folder if (file[-4:] == '.csv')]
+        
+        # result_file, log_file = our_files[0], our_files[1]
+        # print(result_file, log_file)
+        # with open(result_file) as rf:
+        #     print(rf.read())
+        
+
 
                 # raise an OSError
 
-    except OSError:
+    except OSError as osError:
 
-        print(f'File not found : Can\'t open file : {filename}.. Please provide a valid filename')
+        print(f'OSError : {osError.__str__()}')
 
     except Exception as invalid_param_exception:
 
-        print(f'Error : {invalid_param_exception.args[0]}... please provide a file path through the command line arg')
+        print(f'Error : {invalid_param_exception.__str__()}')
 
     
 
