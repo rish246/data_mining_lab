@@ -2,9 +2,12 @@ import sys
 import smtplib
 import json
 
+import tkinter as tk
+
 
 from email.message import EmailMessage
 from time import sleep
+from tkinter.constants import HIDDEN
 
 from feature_extraction import process_file, create_file, write_file
 
@@ -86,34 +89,85 @@ def send_email(recipient_email, result_filename : str, log_filename : str):
 
     #1 -> Login using your email and password
 
+def get_user_input():
+
+    window = tk.Tk()
+
+    user_email, filename = '', ''
+    
+
+    # Label and Entry
+    # 1-> Filepath label
+    file_path_label = tk.Label(window, text="Filename : ")
+    file_path_label.grid(row=0, column=0)
+
+    # Input field -> ENtry
+    file_path_input = tk.Entry(window, width=30, borderwidth=2, border=1)
+    file_path_input.grid(row=0, column=1, columnspan=2)
+
+    # Similarly create fields for Email
+    user_email_label = tk.Label(window, text="Email : ")
+    user_email_label.grid(row=1, column=0)
+
+    # Input field -> ENtry
+    user_email_input = tk.Entry(window, width=30, borderwidth=2, border=1)
+    user_email_input.grid(row=1, column=1, columnspan=2)
+
+
+
+    def returnParams():
+
+        # Get the Filename and user_email
+        filename = file_path_input.get()
+
+        user_email = user_email_input.get()
+
+        if len(filename) is 0 or len(user_email) is 0:
+
+            print('Please enter both filename and user_email')
+
+        else:
+            return filename, user_email
+
+
+    # make a submit button
+    submit_button = tk.Button(window, text="Submit", command=returnParams)
+    submit_button.grid(row=2, column=1)
+
+
+
+
+    window.mainloop()
+
+
+
 def main():
 
     # Take a file and an email from the command line
     try:
-        if len(sys.argv) < 3:
-            raise Exception('<No FILENAME or EMAIL provided>')
 
-        filename = sys.argv[1]
-        user_email = sys.argv[2]
+        filename, user_email = get_user_input()
+
+        print(f'Filename : {filename}, user_email : {user_email}\n')
         
         
         # print("Successfully processed files")
-        result_filename = create_file(filetype='result')
+        # result_filename = create_file(filetype='result')
 
-        log_filename = create_file(filetype='log')
+        # log_filename = create_file(filetype='log')
 
-        # We created log and result files
-        seq_no, res_file_entries, log_file_entries = process_file(filename, seq_no=1)
-
-
-
-        write_file(result_filename, res_file_entries, header='Seq,F1,F2,F3,F4,F5,F6,Class')
-
-        write_file(log_filename, log_file_entries, header='Filename,Seq,Class')
+        # # We created log and result files
+        # seq_no, res_file_entries, log_file_entries = process_file(filename, seq_no=1)
 
 
-        # Send Email
-        send_email(user_email, result_filename, log_filename)
+
+        # write_file(result_filename, res_file_entries, header='Seq,F1,F2,F3,F4,F5,F6,Class')
+
+        # write_file(log_filename, log_file_entries, header='Filename,Seq,Class')
+
+
+        # # Send Email
+        # send_email(user_email, result_filename, log_filename)
         
         # if seq_no == -1:
         #     raise OSError()
