@@ -2,6 +2,43 @@
 import sys
 import time
 import csv
+import logging
+
+
+def create_and_open_file(filetype):
+    f_time = time.time()
+
+    file_ = open(f'{filetype}-{f_time}.csv', 'w')
+
+    file_.close()
+
+    file_ = open(f'{filetype}-{f_time}.csv', 'a')
+
+
+    return file_
+
+def generate_result_and_log_writer():
+
+    ############## GENERATE A LOG WRITER ###############
+    log_file = create_and_open_file(filetype='log')
+
+    log_fieldnames = ['Filename', 'Seq', 'Class']
+
+    log_writer = csv.writer(log_file)
+
+    log_writer.writerow(log_fieldnames)
+
+
+    ################# GENERATE A RESULT WRITER ###############
+    result_file = create_and_open_file(filetype='result')
+
+    result_fieldnames = ['seq_no', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'Class']
+
+    result_writer = csv.DictWriter(result_file, fieldnames=result_fieldnames)
+
+    result_writer.writeheader()
+
+    return result_writer, log_writer
 
 def process_seq(class_, seq):
 
@@ -60,25 +97,16 @@ def build_config(line):
     '''
     
 
-    is_valid_line = True
-
-    ## class and sequence should be valid
-    if len(line) < 2:
-        
-        is_valid_line = False
-
-    seq = ''
+    is_valid_line = False if (len(line) < 2) else True
     
-    class_ = ''
+    seq, class_ = '', ''
     
     no_class_found = False
 
 
     if is_valid_line:
 
-        seq = line.split(',')[0]
-
-        class_ = line.split(',')[1]
+        seq, class_ = line.split(',')[0], line.split(',')[1]
 
 
         if class_ not in ['+', '-']:
@@ -126,91 +154,88 @@ def process_file(filename, result_file_writer_obj, log_file_writer_obj, seq_no):
                 else -> Create an entry in the log file
 
     '''
-    with open(filename, 'r+') as in_file:
+    try:
+        with open(filename, 'r+') as in_file:
 
-            file_content = in_file.read().split('\n')
+                file_content = in_file.read().split('\n')
 
 
-            for line in file_content[1:]:
-                
-                is_valid_line, config = build_config(line)
-
-                if is_valid_line:
-
-                    config['seq_no'] = seq_no
-
+                for line in file_content[1:]:
                     
+                    is_valid_line, config = build_config(line)
 
-                    result_file_writer_obj.writerow(config)
+                    if is_valid_line:
 
-                else:
+                        config['seq_no'] = seq_no
 
-                    seq, class_ = config
+                        
 
-                    log_file_writer_obj.writerow([filename, seq, class_])
+                        result_file_writer_obj.writerow(config)
 
-                seq_no += 1
+                    else:
+
+                        seq, class_ = config
+
+                        log_file_writer_obj.writerow([filename, seq, class_])
+
+                    seq_no += 1
+    except OSError:
+
+        return -1
 
     return seq_no
 
 
-def create_and_open_file(filetype):
-    f_time = time.time()
 
-    file_ = open(f'{filetype}-{f_time}.csv', 'w')
-
-    file_.close()
-
-    file_ = open(f'{filetype}-{f_time}.csv', 'a')
-
-    return file_
-
-def generate_result_and_log_writer():
-
-    ############## GENERATE A LOG WRITER ###############
-    log_file = create_and_open_file(filetype='log')
-
-    log_fieldnames = ['Filename', 'Seq', 'Class']
-
-    log_writer = csv.writer(log_file)
-
-    log_writer.writerow(log_fieldnames)
-
-
-    ################# GENERATE A RESULT WRITER ###############
-    result_file = create_and_open_file(filetype='result')
-
-    result_fieldnames = ['seq_no', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'Class']
-
-    result_writer = csv.DictWriter(result_file, fieldnames=result_fieldnames)
-
-    result_writer.writeheader()
-
-    return result_writer, log_writer
 
 
 def main():
+    ########## CHECK FOR WRONG PARAMS ########
 
-    input_filenames = sys.argv[1:]
+    try:
+        input_filenames = sys.argv[1:]
 
-    seq_no = 1
+        if len(input_filenames) == 0:
 
-    result_writer, log_writer = generate_result_and_log_writer()
+            raise Exception('No file provided')
+
+        seq_no = 1
+
+        result_writer, log_writer = generate_result_and_log_writer()
 
 
-    for filename in input_filenames:
+        for filename in input_filenames:
 
-        seq_no = process_file(filename, result_writer, log_writer, seq_no=seq_no)
+            original_seq_no = seq_no
+
+            seq_no = process_file(filename, result_writer, log_writer, seq_no=seq_no)
+
+            if seq_no == -1:
+
+                seq_no = original_seq_no
+
+                # restore the original seq_number
+                raise OSError()
+
+                # raise an OSError
+
+    except OSError:
+
+        print(f'File not found : Can\'t open file : {filename}.. Please provide a valid filename')
+
+    except Exception as invalid_param_exception:
+
+        print(f'Error : {invalid_param_exception.args[0]}... please provide a file path through the command line arg')
+
+    
+
 
 
 
         
                 
-
-                
-
-
-
-
 if __name__ == "__main__":
     main()
+
+
+########## ADDING UNIT TESTS AND ERROR HANDLING ################
