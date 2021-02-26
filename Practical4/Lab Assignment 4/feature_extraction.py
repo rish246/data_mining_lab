@@ -20,30 +20,7 @@ def create_file(filetype):
 
     return f_name
 
-# def generate_result_and_log_writer():
 
-#     ############## GENERATE A LOG WRITER ###############
-#     log_file = create_file(filetype='log')
-
-#     log_fieldnames = ['Filename', 'Seq', 'Class']
-
-#     log_writer = csv.writer(log_file)
-
-#     log_writer.writerow(log_fieldnames)
-
-
-#     ################# GENERATE A RESULT WRITER ###############
-#     result_file = create_file(filetype='result')
-
-#     res_file_copy = result_file
-
-#     result_fieldnames = ['seq_no', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'Class']
-
-#     result_writer = csv.DictWriter(result_file, fieldnames=result_fieldnames)
-
-#     result_writer.writeheader()
-
-#     return result_writer, log_writer
 
 def process_seq(class_, seq):
 
@@ -255,39 +232,7 @@ def main():
 
         write_file(log_filename, log_file_entries, header='Filename,Seq,Class')
 
-        # open it in r+ mode and writethe result_file_entries to result_filename
-        
-
-
-            
-
-            
-
-        #     if seq_no == -1:
-
-        #         seq_no = original_seq_no
-
-        # #         # restore the original seq_number
-        #         raise OSError()
-
-                
-        #     # sleep(3)
-
-            
-        # ### Get the log file and res file
-        # files_in_cur_folder = os.listdir('./')
-        # # print(os.path.curdir)
-        # # print(files_in_cur_folder)
-        # our_files = [file for file in files_in_cur_folder if (file[-4:] == '.csv')]
-        
-        # result_file, log_file = our_files[0], our_files[1]
-        # print(result_file, log_file)
-        # with open(result_file) as rf:
-        #     print(rf.read())
-        
-
-
-                # raise an OSError
+       
 
     except OSError as osError:
 
@@ -299,10 +244,6 @@ def main():
 
     
 
-
-
-
-        
                 
 if __name__ == "__main__":
     main()

@@ -1,11 +1,8 @@
-import mimetypes
 import sys
 import smtplib
 import json
-import csv
-import os
 
-from email.mime.base import MIMEBase
+
 from email.message import EmailMessage
 from time import sleep
 
