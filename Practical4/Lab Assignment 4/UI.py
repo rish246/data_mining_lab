@@ -171,10 +171,8 @@ def main():
 
 
         # Send Email
-        # send_email(user_email, result_filename, log_filename)
+        send_email(user_email, result_filename, log_filename)
         
-        # if seq_no == -1:
-        #     raise OSError()
 
     except OSError as osError:
 
