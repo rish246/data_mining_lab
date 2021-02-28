@@ -47,8 +47,13 @@ def process_seq(class_, seq):
 
     input_config['Class'] = class_
 
+    digits_of_sequence = [char for char in seq if char.isdigit()]
 
-    is_line_valid = True
+    is_seq_valid = (len(digits_of_sequence) == 0)
+
+    if not is_seq_valid:
+
+        False, {}
     
     for char in seq:
         
@@ -56,13 +61,9 @@ def process_seq(class_, seq):
 
             input_config[resultant[char]] += 1
 
-        elif char.isdigit() or char in ['+', '-']:
-            # Write this in the log file
-            is_line_valid = False
+    
 
-            break
-
-    return is_line_valid, input_config
+    return True, input_config
 
 def build_config(line):
     '''
@@ -83,26 +84,21 @@ def build_config(line):
     
     seq, class_ = '', ''
     
-    no_class_found = False
+    is_class_mentioned = False
 
 
     if is_line_valid:
 
         seq, class_ = line.split(',')[0], line.split(',')[1]
 
+        is_line_valid = is_class_mentioned = class_ in ['+', '-']
 
-        if class_ not in ['+', '-']:
-
-            is_line_valid = False 
-
-            no_class_found = True
-
-        else:
-
-            class_ = 1 if class_ == '+' else 0
+        class_res_values = {'+' : 1, '-' : 1}
 
 
         if is_line_valid:
+
+            class_ = class_res_values[class_]
 
             is_line_valid, input_config = process_seq(seq = seq, class_=class_)
 
@@ -114,13 +110,9 @@ def build_config(line):
     
     else:
     
-        if no_class_found:
+        if is_class_mentioned:
     
-            class_ = ''
-    
-        else:
-    
-            class_ = '-' if (class_ == 1) else '+'
+            class_ = '-' if (class_ == 0) else '+'
         
         return is_line_valid, (seq, class_)
 
@@ -154,7 +146,7 @@ def process_file(filename, seq_no):
 
                     config['seq_no'] = seq_no
 
-                    new_res_entry = [config['seq_no'], config['F1'], config['F1'], config['F1'], config['F1'], config['F1'], config['F1'], config['Class']]
+                    new_res_entry = [config['seq_no'], config['F1'], config['F2'], config['F3'], config['F4'], config['F5'], config['F6'], config['Class']]
 
                     result_entries.append(new_res_entry)
 
@@ -178,7 +170,7 @@ def write_file(filename, entries, header):
 
         file.write(f'{header}\n')
 
-        for entry in entries[1:]:
+        for entry in entries:
 
             # convert entry to string
             entry_str = ''
@@ -216,8 +208,6 @@ def main():
 
         
         for filename in input_filenames:
-
-            original_seq_no = seq_no
 
             seq_no, res_entries, log_entries = process_file(filename, seq_no=seq_no)
 

@@ -50,15 +50,12 @@ def construct_email_message(from_ ,to_, result_filename : str, log_filename : st
 
 
     with open(log_filename, 'rb') as log_file:
-
-        # send the file
+        
         content = log_file.read()
 
         # # add attatchment to email
         msg.add_attachment(content, maintype='application', subtype='octet-stream', filename = log_filename)
-        
 
-    # Lets attach the result and log file
 
     return msg
 
