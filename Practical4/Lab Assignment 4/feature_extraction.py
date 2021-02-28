@@ -51,9 +51,11 @@ def process_seq(class_, seq):
 
     is_seq_valid = (len(digits_of_sequence) == 0)
 
-    if not is_seq_valid:
 
-        False, {}
+    if is_seq_valid == False:
+
+        return False, {}
+
     
     for char in seq:
         
@@ -102,6 +104,7 @@ def build_config(line):
 
             is_line_valid, input_config = process_seq(seq = seq, class_=class_)
 
+
         
 
     if is_line_valid:
@@ -113,6 +116,8 @@ def build_config(line):
         if is_class_mentioned:
     
             class_ = '-' if (class_ == 0) else '+'
+
+        # print(f'Seq : {seq}\tClass : {class_}')
         
         return is_line_valid, (seq, class_)
 
@@ -164,21 +169,21 @@ def process_file(filename, seq_no):
     return seq_no, result_entries, log_entries
 
 
-def write_file(filename, entries, header):
+def write_entries_in_file(filename, entries, header):
     
     with open(filename, 'r+') as file:
 
         file.write(f'{header}\n')
 
         for entry in entries:
+            
+            # Convert values of entries to strings
+            entry = [str(value) for value in entry]
+            
+            # join using ','
+            entry = ','.join(entry)
 
-            # convert entry to string
-            entry_str = ''
-
-            for char in entry:
-                entry_str += str(char) + ','
-
-            file.write(entry_str[:-1] + '\n')
+            file.write(f'{entry}\n')
 
         file.close()
 
@@ -218,9 +223,9 @@ def main():
 
 
         # Now take the result filename
-        write_file(result_filename, result_file_entries, header='Seq,F1,F2,F3,F4,F5,F6,Class')
+        write_entries_in_file(result_filename, result_file_entries, header='Seq,F1,F2,F3,F4,F5,F6,Class')
 
-        write_file(log_filename, log_file_entries, header='Filename,Seq,Class')
+        write_entries_in_file(log_filename, log_file_entries, header='Filename,Seq,Class')
 
        
 
@@ -237,6 +242,3 @@ def main():
                 
 if __name__ == "__main__":
     main()
-
-
-########## ADDING UNIT TESTS AND ERROR HANDLING ################

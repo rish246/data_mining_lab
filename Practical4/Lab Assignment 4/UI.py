@@ -9,7 +9,7 @@ from email.message import EmailMessage
 from time import sleep
 from tkinter.constants import HIDDEN
 
-from feature_extraction import process_file, create_file, write_file
+from feature_extraction import process_file, create_file, write_entries_in_file
 
 ##########################################################################
 
@@ -50,7 +50,7 @@ def construct_email_message(from_ ,to_, result_filename : str, log_filename : st
 
 
     with open(log_filename, 'rb') as log_file:
-        
+
         content = log_file.read()
 
         # # add attatchment to email
@@ -151,8 +151,9 @@ def main():
 
         filename, user_email = get_user_input()
 
-        print(f'Filename : {filename}, user_email : {user_email}\n')
-        
+        if len(filename) == 0 or len(user_email) == 0:
+
+            raise Exception('No filename or email provided')
         
         # print("Successfully processed files")
         result_filename = create_file(filetype='result')
@@ -164,13 +165,13 @@ def main():
 
 
 
-        write_file(result_filename, res_file_entries, header='Seq,F1,F2,F3,F4,F5,F6,Class')
+        write_entries_in_file(result_filename, res_file_entries, header='Seq,F1,F2,F3,F4,F5,F6,Class')
 
-        write_file(log_filename, log_file_entries, header='Filename,Seq,Class')
+        write_entries_in_file(log_filename, log_file_entries, header='Filename,Seq,Class')
 
 
         # Send Email
-        send_email(user_email, result_filename, log_filename)
+        # send_email(user_email, result_filename, log_filename)
         
         # if seq_no == -1:
         #     raise OSError()
