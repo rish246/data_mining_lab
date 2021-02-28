@@ -48,7 +48,7 @@ def process_seq(class_, seq):
     input_config['Class'] = class_
 
 
-    is_valid_line = True
+    is_line_valid = True
     
     for char in seq:
         
@@ -58,11 +58,11 @@ def process_seq(class_, seq):
 
         elif char.isdigit() or char in ['+', '-']:
             # Write this in the log file
-            is_valid_line = False
+            is_line_valid = False
 
             break
 
-    return is_valid_line, input_config
+    return is_line_valid, input_config
 
 def build_config(line):
     '''
@@ -79,21 +79,21 @@ def build_config(line):
     '''
     
 
-    is_valid_line = False if (len(line) < 2) else True
+    is_line_valid = False if (len(line) < 2) else True
     
     seq, class_ = '', ''
     
     no_class_found = False
 
 
-    if is_valid_line:
+    if is_line_valid:
 
         seq, class_ = line.split(',')[0], line.split(',')[1]
 
 
         if class_ not in ['+', '-']:
 
-            is_valid_line = False 
+            is_line_valid = False 
 
             no_class_found = True
 
@@ -102,15 +102,15 @@ def build_config(line):
             class_ = 1 if class_ == '+' else 0
 
 
-        if is_valid_line:
+        if is_line_valid:
 
-            is_valid_line, input_config = process_seq(seq = seq, class_=class_)
+            is_line_valid, input_config = process_seq(seq = seq, class_=class_)
 
         
 
-    if is_valid_line:
+    if is_line_valid:
         
-        return is_valid_line, input_config
+        return is_line_valid, input_config
     
     else:
     
@@ -122,7 +122,7 @@ def build_config(line):
     
             class_ = '-' if (class_ == 1) else '+'
         
-        return is_valid_line, (seq, class_)
+        return is_line_valid, (seq, class_)
 
 
 
@@ -148,9 +148,9 @@ def process_file(filename, seq_no):
 
             for line in file_content[1:]:
                 
-                is_valid_line, config = build_config(line)
+                is_line_valid, config = build_config(line)
 
-                if is_valid_line:
+                if is_line_valid:
 
                     config['seq_no'] = seq_no
 
