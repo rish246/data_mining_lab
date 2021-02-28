@@ -94,6 +94,7 @@ def get_user_input():
     window = tk.Tk()
 
     user_email, filename = '', ''
+
     
 
     # Label and Entry
@@ -117,27 +118,32 @@ def get_user_input():
 
     def returnParams():
 
+        nonlocal user_email, filename
+
         # Get the Filename and user_email
         filename = file_path_input.get()
 
         user_email = user_email_input.get()
 
-        if len(filename) is 0 or len(user_email) is 0:
+        if len(filename) == 0 or len(user_email) == 0:
 
             print('Please enter both filename and user_email')
 
         else:
-            return filename, user_email
+            
+            window.destroy()
+
+            return
 
 
     # make a submit button
     submit_button = tk.Button(window, text="Submit", command=returnParams)
     submit_button.grid(row=2, column=1)
 
-
-
-
+    
     window.mainloop()
+
+    return filename, user_email
 
 
 
@@ -152,22 +158,22 @@ def main():
         
         
         # print("Successfully processed files")
-        # result_filename = create_file(filetype='result')
+        result_filename = create_file(filetype='result')
 
-        # log_filename = create_file(filetype='log')
+        log_filename = create_file(filetype='log')
 
-        # # We created log and result files
-        # seq_no, res_file_entries, log_file_entries = process_file(filename, seq_no=1)
-
-
-
-        # write_file(result_filename, res_file_entries, header='Seq,F1,F2,F3,F4,F5,F6,Class')
-
-        # write_file(log_filename, log_file_entries, header='Filename,Seq,Class')
+        # We created log and result files
+        seq_no, res_file_entries, log_file_entries = process_file(filename, seq_no=1)
 
 
-        # # Send Email
-        # send_email(user_email, result_filename, log_filename)
+
+        write_file(result_filename, res_file_entries, header='Seq,F1,F2,F3,F4,F5,F6,Class')
+
+        write_file(log_filename, log_file_entries, header='Filename,Seq,Class')
+
+
+        # Send Email
+        send_email(user_email, result_filename, log_filename)
         
         # if seq_no == -1:
         #     raise OSError()
