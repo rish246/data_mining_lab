@@ -93,7 +93,7 @@ def build_config(line):
 
         is_line_valid = is_class_mentioned = class_ in ['+', '-']
 
-        class_res_values = {'+' : 1, '-' : 1}
+        class_res_values = {'+' : 1, '-' : 0}
 
 
         if is_line_valid:
