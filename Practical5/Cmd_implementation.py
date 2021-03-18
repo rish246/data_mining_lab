@@ -5,25 +5,6 @@ Author: Rishabh Katna
 '''
 import sys
 
-'''
-Errors and exceptions
-'''
-class Error(Exception):
-    """Base class for exceptions in this module."""
-    pass
-
-class InputError(Error):
-    """Exception raised for errors in the input.
-
-    Attributes:
-        expression -- input expression in which the error occurred
-        message -- explanation of the error
-    """
-
-    def __init__(self, message):
-        self.message = message
-
-
 
 def get_ranks(performance_score):
 
@@ -176,9 +157,7 @@ def generate_matrix(data):
 def main():
 
     try:
-        # check for right number of arguements
-        if len(sys.argv) < 4:
-            raise InputError("Please pass all the parameters through command line")
+        assert (len(sys.argv) >= 5), "Didn't pass all the arguements to the program"
 
 
         ############## Number of arguements are correct ###########################
@@ -192,18 +171,14 @@ def main():
         output_filename = sys.argv[4]
 
 
-
         ########### Last test --> Impacts has only + - #################
         def is_valid_impact(i):
             return i in ['+', '-']
 
         invalid_impacts = [val for val in impacts if (not is_valid_impact(val))]
 
-        if (len(invalid_impacts) > 0):
-            raise InputError("Impacts should have values + | - ... no space before them")
+        assert (len(invalid_impacts) == 0), "Impacts should have values + | - ... no space before them"
         ################################################################
-
-
 
         input_data = open(input_filename).read().strip('\n').split('\n')
 
@@ -212,15 +187,11 @@ def main():
         input_matrix = generate_matrix(input_data)
 
         ##########3 check for columns > 3
-        if len(input_matrix[0]) < 3:
-            raise InputError("Input file should have more than 3 columns")
+        assert (len(input_matrix[0]) > 3), "Input file should have atleast 3 columns"
 
 
         ########### check for dimensionality of impacts, input_data and weights
-        if (len(weights) != len(impacts)) or (len(weights) != len(input_matrix[0])):
-            raise InputError("Weights, Impacts and Input Data should have same number of columns")
-
-
+        assert (len(weights) == len(impacts)) and (len(weights) == len(input_matrix[0])), "Weights, Impacts and Input Data should have same number of columns"
         
 
         # use the matrix to generate output
@@ -239,21 +210,19 @@ def main():
 
             for line in input_data_copy:
                 op_file.write(line + '\n')
-            
-    except InputError as ip_err:
-        print(f"Input Error : {ip_err.message}")
+
+
+    except AssertionError as a_e:
+        print(a_e)
 
     except FileNotFoundError as file_err:
-        print(f'File not found : ', file_err)
+        print(file_err)
 
-    except ValueError:
-        print(f'Non numerical values found in data')
+    except ValueError as v_e:
+        print(v_e)
 
 
 
 
 if __name__ == "__main__":
     main()
-
-### this is working now #############
-### Looking for some errors now #####
