@@ -153,6 +153,19 @@ def generate_matrix(data):
 
     return input_matrix
 
+def write_result_in_output_file(input_data_copy, performance_score, ranks, output_filename):
+    input_data_copy[0] += ',Topsis Score,Ranks'
+
+    for i in range(1, len(input_data_copy)):
+
+        input_data_copy[i] += f',{performance_score[i-1]},{ranks[i-1]}'
+
+
+    # write to the output file
+    with open(output_filename, 'w') as op_file:
+
+        for line in input_data_copy:
+            op_file.write(line + '\n')
 
 def main():
 
@@ -197,19 +210,8 @@ def main():
         # use the matrix to generate output
         performance_score, ranks = apply_TOPSIS(input_matrix, weights, impacts)
         # print(performance_score)
-
-        input_data_copy[0] += ',Topsis Score,Ranks'
-
-        for i in range(1, len(input_data_copy)):
-
-            input_data_copy[i] += f',{performance_score[i-1]},{ranks[i-1]}'
-
-
-        # write to the output file
-        with open(output_filename, 'w') as op_file:
-
-            for line in input_data_copy:
-                op_file.write(line + '\n')
+        
+        write_result_in_output_file(input_data_copy, performance_score, ranks, output_filename)
 
 
     except AssertionError as a_e:
