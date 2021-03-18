@@ -5,11 +5,24 @@ Author: Rishabh Katna
 '''
 import sys
 
-def merge_matrix_and_scores(test_matrix1, n_rows, performance_score, ranks):
-    
-    for row in range(n_rows):
-    
-        test_matrix1[row] = test_matrix1[row] + [performance_score[row], ranks[row]]
+'''
+Errors and exceptions
+'''
+class Error(Exception):
+    """Base class for exceptions in this module."""
+    pass
+
+class InputError(Error):
+    """Exception raised for errors in the input.
+
+    Attributes:
+        expression -- input expression in which the error occurred
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
 
 
 def get_ranks(performance_score):
@@ -65,18 +78,15 @@ def get_ideal_values(test_matrix1, actions, n_rows, n_cols):
     ideal_worst_values_for_cols = [0 for _ in range(n_cols)]
 
     def get_best_val_func(action):
-
         return max if (action == '+') else min
 
     def get_worst_val_func(action):
-
         return max if (action == '-') else min
 
 
     for col in range(n_cols):
 
         jth_col = [test_matrix1[row][col] for row in range(n_rows)]
-
 
         # get the ideal best result of the column
         best_val_func = get_best_val_func(actions[col])
@@ -85,7 +95,6 @@ def get_ideal_values(test_matrix1, actions, n_rows, n_cols):
 
         ideal_best_values_for_cols[col] = result_best
 
-
         # get the ideal worst result of the column
         worst_val_func = get_worst_val_func(actions[col])
 
@@ -93,7 +102,6 @@ def get_ideal_values(test_matrix1, actions, n_rows, n_cols):
 
         ideal_worst_values_for_cols[col] = result_worst
 
-    
     return ideal_best_values_for_cols, ideal_worst_values_for_cols
 
 
@@ -166,36 +174,82 @@ def generate_matrix(data):
 
 
 def main():
-    input_filename = sys.argv[1]
 
-    weights = list(map(float, sys.argv[2].split(',')))
-
-    impacts = sys.argv[3].split(',')
-
-    output_filename = sys.argv[4]
-
-    input_data = open(input_filename).read().strip('\n').split('\n')
-
-    input_data_copy = input_data.copy()
-
-    input_matrix = generate_matrix(input_data)
-
-    # use the matrix to generate output
-    performance_score, ranks = apply_TOPSIS(input_matrix, weights, impacts)
-    # print(performance_score)
-
-    input_data_copy[0] += ',Topsis Score,Ranks'
-
-    for i in range(1, len(input_data_copy)):
-
-        input_data_copy[i] += f',{performance_score[i-1]},{ranks[i-1]}'
+    try:
+        # check for right number of arguements
+        if len(sys.argv) < 4:
+            raise InputError("Please pass all the parameters through command line")
 
 
-    # write to the output file
-    with open(output_filename, 'w') as op_file:
+        ############## Number of arguements are correct ###########################
+        ############### Now check for the validity of arguements ##################
+        input_filename = sys.argv[1]
 
-        for line in input_data_copy:
-            op_file.write(line + '\n')
+        weights = [float(val) for val in sys.argv[2].split(',')]
+
+        impacts = sys.argv[3].split(',')
+
+        output_filename = sys.argv[4]
+
+
+
+        ########### Last test --> Impacts has only + - #################
+        def is_valid_impact(i):
+            return i in ['+', '-']
+
+        invalid_impacts = [val for val in impacts if (not is_valid_impact(val))]
+
+        if (len(invalid_impacts) > 0):
+            raise InputError("Impacts should have values + | - ... no space before them")
+        ################################################################
+
+
+
+        input_data = open(input_filename).read().strip('\n').split('\n')
+
+        input_data_copy = input_data.copy()
+
+        input_matrix = generate_matrix(input_data)
+
+        ##########3 check for columns > 3
+        if len(input_matrix[0]) < 3:
+            raise InputError("Input file should have more than 3 columns")
+
+
+        ########### check for dimensionality of impacts, input_data and weights
+        if (len(weights) != len(impacts)) or (len(weights) != len(input_matrix[0])):
+            raise InputError("Weights, Impacts and Input Data should have same number of columns")
+
+
+        
+
+        # use the matrix to generate output
+        performance_score, ranks = apply_TOPSIS(input_matrix, weights, impacts)
+        # print(performance_score)
+
+        input_data_copy[0] += ',Topsis Score,Ranks'
+
+        for i in range(1, len(input_data_copy)):
+
+            input_data_copy[i] += f',{performance_score[i-1]},{ranks[i-1]}'
+
+
+        # write to the output file
+        with open(output_filename, 'w') as op_file:
+
+            for line in input_data_copy:
+                op_file.write(line + '\n')
+            
+    except InputError as ip_err:
+        print(f"Input Error : {ip_err.message}")
+
+    except FileNotFoundError as file_err:
+        print(f'File not found : ', file_err)
+
+    except ValueError:
+        print(f'Non numerical values found in data')
+
+
 
 
 if __name__ == "__main__":
