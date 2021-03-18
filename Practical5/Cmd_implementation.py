@@ -1,8 +1,10 @@
+ 
 '''
 Command line implementation of the TOPSIS algorithm
-
 Author: Rishabh Katna
 '''
+import sys
+
 def merge_matrix_and_scores(test_matrix1, n_rows, performance_score, ranks):
     
     for row in range(n_rows):
@@ -143,29 +145,61 @@ def apply_TOPSIS(test_matrix1, weights, actions):
     ########## Find ranks ###################################3
     ranks = get_ranks(performance_score)
 
-    merge_matrix_and_scores(test_matrix1, n_rows, performance_score, ranks)
+    # merge_matrix_and_scores(test_matrix1, n_rows, performance_score, ranks)
+    return performance_score, ranks
+
+
+def generate_matrix(data):
+    input_matrix = data[1 : ]
+
+    input_matrix = [row.split(',') for row in input_matrix]
+
+    input_matrix = [row[1 : ] for row in input_matrix]
+    # apply float to each element of input_matrix
+    for row in range(len(input_matrix)):
+        
+        for col in range(len(input_matrix[0])):
+        
+            input_matrix[row][col] = float(input_matrix[row][col])
+
+    return input_matrix
 
 
 def main():
-    test_matrix1 = [
-    [250, 16, 12, 5],
-    [200, 16, 8, 3],
-    [300, 32, 16, 4],
-    [275, 32, 8, 4],
-    [225, 16, 16, 2]
-    ]
+    input_filename = sys.argv[1]
 
-    weights = [0.25, 0.25, 0.25, 0.25]
-    actions = ['-', '+', '+', '+']
+    weights = list(map(float, sys.argv[2].split(',')))
 
-    apply_TOPSIS(test_matrix1, weights, actions)
+    impacts = sys.argv[3].split(',')
 
-    for row in test_matrix1:
-        print(row)
+    output_filename = sys.argv[4]
+
+    input_data = open(input_filename).read().strip('\n').split('\n')
+
+    input_data_copy = input_data.copy()
+
+    input_matrix = generate_matrix(input_data)
+
+    # use the matrix to generate output
+    performance_score, ranks = apply_TOPSIS(input_matrix, weights, impacts)
+    # print(performance_score)
+
+    input_data_copy[0] += ',Topsis Score,Ranks'
+
+    for i in range(1, len(input_data_copy)):
+
+        input_data_copy[i] += f',{performance_score[i-1]},{ranks[i-1]}'
 
 
+    # write to the output file
+    with open(output_filename, 'w') as op_file:
 
+        for line in input_data_copy:
+            op_file.write(line + '\n')
 
 
 if __name__ == "__main__":
     main()
+
+### this is working now #############
+### Looking for some errors now #####
