@@ -1,7 +1,11 @@
+from flask import Flask, render_template
+
 import smtplib
 import json
 
 from email.message import EmailMessage
+
+from flask.globals import request
 
 
 from Cmd_implementation import generate_matrix, apply_TOPSIS, write_result_in_output_file
@@ -73,37 +77,89 @@ def send_email(recipient_email, result_filename):
 
     #1 -> Login using your email and password
 
-def get_user_input():
-    input_filename = "./Lab Assignment 05/Input files for Assignment05/data.csv" 
-    weights = [1, 1, 1, 2] 
-    impacts = ['+','+','-','+']
-    user_email = "rishabhkatna2228@gmail.com"
 
-    # extract data 
-    input_data = open(input_filename).read().strip('\n').split('\n')
-    return input_data, weights, impacts, user_email
+def run_service(input_data, weights, impacts, user_email):
+    # input_data, weights, impacts, user_email = get_user_input()
+    
+    input_data_copy = input_data.copy()
+    
+    input_matrix = generate_matrix(input_data)
+    
+    output_filename = 'output.csv'
+    
+    performance_score, ranks = apply_TOPSIS(input_matrix, weights, impacts)
+    
+    write_result_in_output_file(input_data_copy, performance_score, ranks, output_filename)
+    # use input_matrix to generate  output_filesend_email(user_email, output_filename)
+    send_email(user_email, output_filename)
+
+
+
+
+
+##################### MAKE IT A FLASK APP ################
+
+##### Lets create an app here
+app = Flask(__name__)
+
+def is_file_valid(filename):
+    allowed_extensions = ['txt', 'csv']
+
+    if len(filename) == 0:
+        return False
+
+    file_extension = filename[-3:]
+    return file_extension in allowed_extensions
+
+
+############### Configure an upload path for files
+UPLOAD_FOLDER = "/home/rishabh/Documents/course_work/8th_sem/lab_practical/data_mining_lab/Practical5/Lab Assignment 05/Input files for Assignment05/"
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+import os
+# from werkzeug.utils import secure_filename
+######## make a default route
+@app.route('/', methods = ['POST', 'GET'])
+def default_page():
+    if request.method == 'POST':
+        data_file = request.files['file-content']
+        
+        if is_file_valid(data_file.filename):
+            res_path = os.path.join(app.config['UPLOAD_FOLDER'], data_file.filename)
+
+            data_file.save(res_path)
+
+            ########## get input_data, weights, impacts, user_email
+            input_data = open(res_path).read().strip('\n').split('\n')
+
+            weights = [float(val) for val in request.form['weights'].split(',')]
+
+            impacts = request.form['impacts'].split(',')
+
+            user_email = request.form['email']
+
+            run_service(input_data, weights, impacts, user_email)
+
+            return "Congratulations... Output has been sent to your email"
+
+
+        else:
+            return "ERROR OCCURED.. You can upload only csv or txt files"
+
+        
+
+    else:
+        return render_template('data_form.html')
+
+
+
 
 def main():
 
     # Take a file and an email from the command line
-    input_data, weights, impacts, user_email = get_user_input()
+    # run_service()
+    app.run(debug=True)
 
-    input_data_copy = input_data.copy()
-
-    input_matrix = generate_matrix(input_data)
-
-    output_filename = 'output.csv'
-
-    performance_score, ranks = apply_TOPSIS(input_matrix, weights, impacts)
-
-    write_result_in_output_file(input_data_copy, performance_score, ranks, output_filename)
-
-
-    # use input_matrix to generate  output_file
-    send_email(user_email, output_filename)
-
-
-    print(input_matrix)
 
 
 if __name__ == "__main__":
