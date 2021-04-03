@@ -12,10 +12,9 @@ iris_dataset.pop(4)
 K = 3
 
 
-iris_dataset = iris_dataset.sample(frac=1).reset_index(drop=True)
 
 # lets generate k random indices and then apply this algo
-k_random_indices = [random.randrange(0, 149) for _ in range(K)]
+k_random_indices = [0, 51, 101]
 centroids = [iris_dataset.loc[i] for i in k_random_indices]
 
 max_iterations = 1000
@@ -75,7 +74,6 @@ i = 0
 for cluster in clusters:
 
     color_for_this_cluster = colors[i]
-    
     i += 1
 
     for point in cluster:
@@ -83,7 +81,8 @@ for cluster in clusters:
         plt.scatter(point[2], point[3], color = color_for_this_cluster, marker="x")
 
 
+
 plt.title("K-Means on iris dataset")
-plt.xlabel("Petal Width")
 plt.xlabel("Petal Length")
+plt.ylabel("Petal Width")
 plt.show()
