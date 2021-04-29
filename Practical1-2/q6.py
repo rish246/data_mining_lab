@@ -1,5 +1,5 @@
-input = [ n for n in range(1, 10) ]
-
+input = [ n for n in range(100, 901) ]
+# import pprint
 
 def is_prime(element):
 
@@ -22,28 +22,33 @@ def is_even(element):
     return (element % 2 == 0)
 
 
+def pretty_print(List):
+    for i in range(0, len(List), 15):
+        print(List[i : i + 15])
+
 def main():
     global input
 
+    even_numbers = [number for number in input if is_even(number)]
+    odd_numbers = [number for number in input if is_odd(number)]
+    prime_numbers = [number for number in input if is_prime(number)]
 
-    sum_odd = 0
-    sum_even = 0
-    sum_prime = 0
-    
-    print(input)
-    for number in input:
-        if is_even(number):
-            sum_even += number
-
-        if is_odd(number):
-            sum_odd += number
-
-        if is_prime(number):
-            sum_prime += number
-
+    sum_odd = sum(odd_numbers)
+    sum_even = sum(even_numbers)
+    sum_prime = sum(prime_numbers)
         
-    print(sum_odd)
-    print(sum_even)
-    print(sum_prime)
+    # print('Odd numbers')
+    # pretty_print(odd_numbers)
+    # print(f'Sum of odd numbers {sum_odd}')
+
+    # print('Even Numbers')
+    # # print(even_numbers)
+    # pretty_print(even_numbers)
+    # print(f'Sum of Even Numbers : {sum_even}')
+
+    print('Prime Numbers')
+    # print(prime_numbers)
+    pretty_print(prime_numbers)
+    print(f'Sum of Prime numbers : {sum_prime}')
 
 main()

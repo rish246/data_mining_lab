@@ -13,26 +13,18 @@ start_time = time.time()
 
 for idx, filename in enumerate(test_files):
 
-    if filename[-1] == 'y':
+    if filename[-1] != 't' :
         continue
 
     
     with open(filename, 'r+') as input_file:
 
-        # start counting here
 
         file_content = input_file.read().split('\n')
 
-        # convert Each line to uppercase
-        for i in range(len(file_content)):
-            file_content[i] = file_content[i].upper()
+        file_content = [string.upper() for string in file_content]
 
-        
-        # Write the File content to the output File
-        # Write File content to the output file
-        # Empty the contents of a file
-        # The problem is my input ptr
-        # place the input ptr to the starting of the file
+        # place the input_ptr to the start of the input file
         input_file.seek(0)
 
         for line in file_content:
@@ -41,11 +33,13 @@ for idx, filename in enumerate(test_files):
         if (idx + 1) in test_indices:
             time_taken[idx + 1] = (time.time() - start_time)
         
+
+    # break
     
     
 
 # write the dict to csv file
 with open(output_file, 'w', newline='') as output_file:
     writer = csv.writer(output_file)
-
+    writer.writerow(['Number of Files', 'Time Taken(s)'])
     writer.writerows(time_taken.items())

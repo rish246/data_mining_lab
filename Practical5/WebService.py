@@ -80,6 +80,9 @@ def send_email(recipient_email, result_filename):
 
 def run_service(input_data, weights, impacts, user_email):
     # input_data, weights, impacts, user_email = get_user_input()
+    weights = [float(val) for val in weights.split(',')]
+
+    impacts = impacts.split(',')
     
     input_data_copy = input_data.copy()
     
@@ -96,6 +99,7 @@ def run_service(input_data, weights, impacts, user_email):
 
 
 
+################# ADD VALIDATION TO THE FLASK REQUEST OBJET #####################
 
 ##################### MAKE IT A FLASK APP ################
 
@@ -105,7 +109,7 @@ app = Flask(__name__)
 def is_file_valid(filename):
     allowed_extensions = ['txt', 'csv']
 
-    if len(filename) == 0:
+    if not filename:
         return False
 
     file_extension = filename[-3:]
@@ -118,13 +122,64 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 import os
 # from werkzeug.utils import secure_filename
-######## make a default route
+######## make a default rou
+def validate(input_data, weights, impacts, user_email):
+    errors = []
+
+    ##################### check if weights are valid #######
+    ## find non negative value in weights
+    weights_copy = weights.split(',')
+    # def is_valid_weight(w):
+    #     return isinstance(w, int) or isinstance(w, float)
+
+    # non_numerical_weights = [val for val in weights_copy if not is_valid_weight(val)] ## type(va)
+    # if non_numerical_weights:
+    #     errors.append("Weights can be numerical values only")
+    try:
+        [float(val) for val in weights_copy]
+    except ValueError:
+        errors.append("Weights can be numerical values only")
+    
+    ########### validity of impacts ###########
+    impacts_copy = impacts.split(',')
+    def is_valid_impact(i):
+            return i in ['+', '-']
+
+    invalid_impacts = [val for val in impacts_copy if (not is_valid_impact(val))]
+
+    if invalid_impacts:
+        errors.append(f"Invalid value for an impact : {invalid_impacts[0]}")
+
+    ################### number of columns in input_file ########
+    input_data_copy = input_data.copy()
+
+    input_matrix = generate_matrix(input_data_copy)
+
+    if len(input_matrix[0]) < 3:
+        errors.append(f'Input file should have atleast 3 columns, your file only had {len(input_matrix[0])}')
+
+
+    ################# check for dimensionality of the data, weights, and impacts
+    if (len(weights_copy) != len(impacts_copy)) or (len(weights_copy) != len(input_matrix[0])):
+        errors.append(f'Weights, Impacts and Input Data should have same number of columns')
+
+
+    ####### check if user email looks nice
+    ######### can use regex match
+    print(errors)
+    
+    return errors
+
+
+
+
 @app.route('/', methods = ['POST', 'GET'])
 def default_page():
     if request.method == 'POST':
         data_file = request.files['file-content']
         
         if is_file_valid(data_file.filename):
+            
             res_path = os.path.join(app.config['UPLOAD_FOLDER'], data_file.filename)
 
             data_file.save(res_path)
@@ -132,19 +187,33 @@ def default_page():
             ########## get input_data, weights, impacts, user_email
             input_data = open(res_path).read().strip('\n').split('\n')
 
-            weights = [float(val) for val in request.form['weights'].split(',')]
+            weights = request.form['weights']
 
-            impacts = request.form['impacts'].split(',')
+            impacts = request.form['impacts']
 
             user_email = request.form['email']
 
+            ########### validate these ################
+            ##########3 if errors, return errors
+            ############# else run service
+            errors = validate(input_data, weights, impacts, user_email)
+            print("--------------------------------------------------------")
+            print("--------------------------------------------------------")
+            print(errors)
+            print("--------------------------------------------------------")
+            print("--------------------------------------------------------")
+
+
+            if errors:
+                return render_template('data_form.html', my_errors = errors)
+
             run_service(input_data, weights, impacts, user_email)
 
-            return "Congratulations... Output has been sent to your email"
+            return render_template('success_message.html')
 
 
         else:
-            return "ERROR OCCURED.. You can upload only csv or txt files"
+            return render_template('data_form.html')
 
         
 

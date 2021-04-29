@@ -28,15 +28,7 @@ def main():
 
         exec_times.append((time.time() - start_time) * 1000)
 
-    
-    print(exec_times)
-        #start timer
-        # 
-        # sort
-        # 
-        # end timer
-        # 
-        # store result in exec_times array 
+
 
     write_result(list_sizes, exec_times)
 

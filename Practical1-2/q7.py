@@ -10,5 +10,5 @@ D = {
 with open('q7_output.txt', 'r+') as output_file:
 
     for key, value in D.items():
-        output_file.write(f'{key}, {value}\n')
+        output_file.write(f'{value}, {len(value)}\n')
 

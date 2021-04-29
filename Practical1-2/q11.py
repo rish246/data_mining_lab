@@ -12,5 +12,5 @@ do_stuff()
 
 
 processing_time = (time.time() - start_time)
-print(processing_time)
+print(f'\nTime taken by the Program : {processing_time}')
 

@@ -1,47 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base_template.html" %}
+{% block content %}
+<form action="http://127.0.0.1:5000/ " method="POST" class="container form-horizontal data-form" enctype="multipart/form-data">
+    <div class="group">
+        <label class="control-label">File : </label>
+        <input name = "file-content" class="form-control" type="file" required >
+    </div>
+
+
+    <div class="group">
+        <label class="control-label">Weights(separated by ',') : </label>
+        <input name = "weights" class="form-control" type="text" value="{{ request.form['weights'] }}" required placeholder="1,2,0.5,3 etc">
+    </div>
+
+
+    <div class="group">
+        <label class="control-label">Impacts(separated by ',') : </label>
+        <input name = "impacts" class="form-control" type="text" value="{{ request.form['impacts'] }}" required placeholder="+,-,+,-">
+    </div>
+
+
+    <div class="group">
+        <label class="control-label">Email : </label>
+        <input name = "email" class="form-control" type="email" value="{{ request.form['email'] }}" required placeholder="email@example.com">   
+        
+    </div>
+
+    <button class="btn btn-info">Submit</button>
+
+    <ul>
+        {% for err in my_errors %}
+            <li class="alert alert-danger">{{ err }}</li>
+        {% endfor %}
+    </ul>
     
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-    <!-- <link rel="stylesheet" href="{{ url_for('static', filename = 'styles.css') }}"/> -->
+</form>
 
-    <style>
-        .data-form {
-            margin-top: 15%;
-        }
 
-        /* input {
-            display: block;
-            width: 600px;
-            margin-left: 25%;
-        } */
-
-        button {
-            margin-left: 45%;
-            margin-top: 5px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #1c3c63;
-        }
-
-    </style>
-    <title>TOPSIS ALGORITHM</title>
-</head>
-<body>
-    <h1 class="display-2">TOPSIS ALGORITHM</h1>
-
-    <form action="http://127.0.0.1:5000/ " method="POST" class="container data-form" enctype="multipart/form-data">
-        <input name = "file-content" class="form-control" type="file">
-        <input name = "weights" class="form-control" type="text">
-        <input name = "impacts" class="form-control" type="text">
-        <input name = "email" class="form-control" type="email">
-
-        <button class="btn btn-info">Submit</button>
-    </form>
-</body>
-</html>
+{% endblock %}
